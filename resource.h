@@ -9,7 +9,6 @@
 #define IDR_MAINFRAME                   128
 #define IDC_BUTTON_QUIT                 1000
 #define IDC_BUTTON_EXTRACT              1001
-#define IDC_BUTTON3                     1002
 #define IDC_BUTTON_COMPRESS             1002
 
 // Next default values for new objects
