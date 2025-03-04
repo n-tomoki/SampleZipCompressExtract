@@ -218,8 +218,89 @@ void CDlgMain::End(const int nEndCode)
 /// </summary>
 void CDlgMain::OnBnClickedButtonExtract()
 {
-	// TODO: ここにコントロール通知ハンドラー コードを追加します。
+	ExtractFromZip(
+		L"D:\\Developmentsoft\\VsWork\\VC22\\Test\\ZipCompressExtract\\Work\\Settings.zip",
+		L"D:\\Developmentsoft\\VsWork\\VC22\\Test\\ZipCompressExtract\\Work\\展開後"
+	);
 }
+
+BOOL CDlgMain::ExtractFromZip(const WCHAR *pszFilePath, const WCHAR *pszFolerPath)
+{
+	BOOL bVal = FALSE;
+
+	IShellDispatch *pISD = NULL;
+	Folder *pZippedFile  = NULL;
+	Folder *pDestination = NULL;
+
+	long FilesCount  = 0;
+	IDispatch   *pItem       = NULL;
+	FolderItems *pFilesInside = NULL;
+
+	VARIANT vOptions, vOutFolder, vInZipFile, vItem;
+
+	VariantInit(&vItem);
+	VariantInit(&vOptions);
+	VariantInit(&vOutFolder);
+	VariantInit(&vInZipFile);
+
+	if (CoCreateInstance(CLSID_Shell, NULL, CLSCTX_INPROC_SERVER, IID_IShellDispatch, (void **)&pISD) != S_OK) {
+		goto ERR_END;
+	}
+
+	vInZipFile.vt = VT_BSTR;
+	vInZipFile.bstrVal = SysAllocString(pszFilePath);
+	pISD->NameSpace(vInZipFile, &pZippedFile);
+	if (!pZippedFile) { goto ERR_END; }
+
+	vOutFolder.vt = VT_BSTR;
+	vOutFolder.bstrVal = SysAllocString(pszFolerPath);
+	pISD->NameSpace(vOutFolder, &pDestination);
+	if (!pDestination) { goto ERR_END; }
+
+	pZippedFile->Items(&pFilesInside);
+	if (!pFilesInside) { goto ERR_END; }
+
+	pFilesInside->get_Count(&FilesCount);
+	if (FilesCount < 1) { goto ERR_END; }
+
+	pFilesInside->QueryInterface(IID_IDispatch, (void**)&pItem);
+
+	vItem.vt       = VT_DISPATCH;
+	vItem.pdispVal = pItem;
+
+	vOptions.vt   = VT_I4;
+	vOptions.lVal = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOCONFIRMMKDIR |FOF_NOERRORUI | FOF_NOCOPYSECURITYATTRIBS;
+
+//	(0x0004)FOF_SILENT                進行状況ダイアログ ボックスを表示しません。
+//	(0x0008)FOF_RENAMEONCOLLISION     ターゲット名を持つファイルが既に存在する場合は、移動、コピー、または名前変更操作で、新しい名前で操作されているファイルを指定します。
+//	(0x0010)FOF_NOCONFIRMATION        表示されるダイアログ ボックスに対して、"すべてにはい" と応答します
+//	(0x0040)FOF_ALLOWUNDO             可能な場合は、元に戻す情報を保持します。
+//	(0x0080)FOF_FILESONLY             ワイルドカード ファイル名 (*.*) が指定されている場合にのみ、ファイルに対して操作を実行します。
+//	(0x0100)FOF_SIMPLEPROGRESS        進行状況ダイアログ ボックスを表示しますが、ファイル名は表示しません。
+//	(0x0200)FOF_NOCONFIRMMKDIR        操作で作成する必要がある場合は、新しいディレクトリの作成を確認しないでください
+//	(0x0400)FOF_NOERRORUI             エラーが発生した場合は、ユーザー インターフェイスを表示しないでください
+//	(0x0800)FOF_NOCOPYSECURITYATTRIBS ファイルのセキュリティ属性をコピーしないでください。(Ver 4.71)
+//	(0x1000)FOF_NORECURSION           ローカル ディレクトリでのみ動作します。 サブディレクトリに再帰的に操作しないでください。
+//	(0x2000)FOF_NO_CONNECTED_ELEMENTS 接続されているファイルをグループとしてコピーしないでください。 指定したファイルのみをコピーします。(Ver 5.0)
+		
+	bVal = pDestination->CopyHere(vItem, vOptions) == S_OK;
+
+ERR_END:
+	if (vInZipFile.bstrVal != NULL) { SysFreeString(vInZipFile.bstrVal); }
+	if (vOutFolder.bstrVal != NULL) { SysFreeString(vOutFolder.bstrVal); }
+
+	if (pItem        != NULL) { pItem       ->Release(); }
+	if (pFilesInside != NULL) { pFilesInside->Release(); }
+	if (pDestination != NULL) { pDestination->Release(); }
+	if (pZippedFile  != NULL) { pZippedFile ->Release(); }
+	if (pISD         != NULL) { pISD        ->Release(); }
+
+	return bVal;
+}
+
+
+//===========================================================================
+//===========================================================================
 
 
 /// <summary>
@@ -229,6 +310,8 @@ void CDlgMain::OnBnClickedButtonCompress()
 {
 	// TODO: ここにコントロール通知ハンドラー コードを追加します。
 }
+
+
 
 
 /*

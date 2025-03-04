@@ -30,6 +30,9 @@ protected:
 	void Init();
 	void End(const int nEndCode = 0);
 
+	BOOL ExtractFromZip(const WCHAR *pszFilePath, const WCHAR *pszFolerPath);
+
+
 protected:
 	// 生成された、メッセージ割り当て関数
 	virtual BOOL OnInitDialog();
