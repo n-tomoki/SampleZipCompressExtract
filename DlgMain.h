@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "UFile.h"
 
 // CDlgMain ダイアログ
 class CDlgMain : public CDialogEx
@@ -31,6 +32,9 @@ protected:
 	void End(const int nEndCode = 0);
 
 	BOOL ExtractFromZip(const WCHAR *pszFilePath, const WCHAR *pszFolerPath);
+	BOOL CompressToZip(const WCHAR *pszFilePath, const WCHAR *pszFolerPath);
+	void WaitForCopyToComplete();
+
 
 
 protected:
